@@ -53,21 +53,29 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.data.local.CreationEntity
 import com.example.data.local.FeatureType
+import com.example.security.getActiveAppCheckDebugToken
+import com.example.security.saveCustomAppCheckDebugToken
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -646,6 +654,18 @@ fun ErrorBannerCard(
     onRetry: () -> Unit,
     tagPrefix: String
 ) {
+    val context = LocalContext.current
+    val isAppCheckError = remember(errorMessage) {
+        errorMessage.contains("App Check", ignoreCase = true) ||
+            errorMessage.contains("token is invalid", ignoreCase = true) ||
+            errorMessage.contains("403", ignoreCase = true)
+    }
+    var activeDebugToken by remember {
+        mutableStateOf(if (isAppCheckError) getActiveAppCheckDebugToken(context) else "")
+    }
+    var customTokenInput by remember { mutableStateOf("") }
+    var tokenStatusMsg by remember { mutableStateOf("") }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -681,6 +701,94 @@ fun ErrorBannerCard(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onErrorContainer
             )
+
+            if (isAppCheckError && activeDebugToken.isNotBlank()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = MaterialTheme.shapes.medium,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "🔑 आपके फ़ोन का Firebase App Check Debug Token:",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = activeDebugToken,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "समाधान: नीचे दिए बटन से यह टोकन कॉपी करें और Firebase Console → App Check → Apps → Manage debug tokens में जोड़ें, या वहाँ से बनाया गया टोकन नीचे पेस्ट करें:",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        OutlinedButton(
+                            onClick = {
+                                copyTextToClipboard(
+                                    context = context,
+                                    label = "App Check Debug Token",
+                                    text = activeDebugToken,
+                                    onCopied = {
+                                        tokenStatusMsg = "डिबग टोकन कॉपी हो गया! इसे Firebase Console → App Check → Manage debug tokens में पेस्ट करें।"
+                                    }
+                                )
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("${tagPrefix}_copy_debug_token_btn")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ContentCopy,
+                                contentDescription = "Copy Debug Token",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("डिबग टोकन कॉपी करें (Copy Debug Token)")
+                        }
+
+                        OutlinedTextField(
+                            value = customTokenInput,
+                            onValueChange = { customTokenInput = it },
+                            placeholder = { Text("या Firebase Console का Debug Token यहाँ पेस्ट करें") },
+                            singleLine = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("${tagPrefix}_custom_debug_token_input")
+                        )
+                        if (customTokenInput.isNotBlank()) {
+                            OutlinedButton(
+                                onClick = {
+                                    if (saveCustomAppCheckDebugToken(context, customTokenInput)) {
+                                        activeDebugToken = customTokenInput.trim()
+                                        customTokenInput = ""
+                                        tokenStatusMsg = "नया Debug Token सहेजा गया! अब 'पुनः प्रयास करें' दबाएँ।"
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("यह टोकन सहेजें (Save Debug Token)")
+                            }
+                        }
+                        if (tokenStatusMsg.isNotBlank()) {
+                            Text(
+                                text = tokenStatusMsg,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = onRetry,

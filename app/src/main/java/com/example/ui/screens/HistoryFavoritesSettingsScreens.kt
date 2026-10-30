@@ -687,6 +687,13 @@ fun SettingsScreen(
 
         // Privacy, Usage Limits & AI Security Card
         item {
+            val context = LocalContext.current
+            var activeDebugToken by remember {
+                mutableStateOf(com.example.security.getActiveAppCheckDebugToken(context))
+            }
+            var customTokenInput by remember { mutableStateOf("") }
+            var tokenFeedback by remember { mutableStateOf("") }
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -719,6 +726,71 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+
+                    if (activeDebugToken.isNotBlank()) {
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+                        Text(
+                            text = "🛡️ Firebase App Check डिबग टोकन (फ़ोन टेस्टिंग के लिए):",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Package ID: ${context.packageName}\nDebug Token: $activeDebugToken",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        OutlinedButton(
+                            onClick = {
+                                copyTextToClipboard(
+                                    context = context,
+                                    label = "Firebase App Check Debug Token",
+                                    text = activeDebugToken,
+                                    onCopied = {
+                                        tokenFeedback = "डिबग टोकन कॉपी हो गया! इसे Firebase Console → App Check → Apps → Manage debug tokens में जोड़ें।"
+                                    }
+                                )
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("settings_copy_debug_token_btn")
+                        ) {
+                            Icon(imageVector = Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("App Check Debug Token कॉपी करें")
+                        }
+
+                        OutlinedTextField(
+                            value = customTokenInput,
+                            onValueChange = { customTokenInput = it },
+                            placeholder = { Text("या Firebase Console से बनाया गया टोकन पेस्ट करें") },
+                            singleLine = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("settings_custom_debug_token_input")
+                        )
+                        if (customTokenInput.isNotBlank()) {
+                            Button(
+                                onClick = {
+                                    if (com.example.security.saveCustomAppCheckDebugToken(context, customTokenInput)) {
+                                        activeDebugToken = customTokenInput.trim()
+                                        customTokenInput = ""
+                                        tokenFeedback = "नया App Check Debug Token सफलतापूर्वक सहेजा गया!"
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("नया Debug Token सहेजें (Save Token)")
+                            }
+                        }
+                        if (tokenFeedback.isNotBlank()) {
+                            Text(
+                                text = tokenFeedback,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color(0xFF34D399)
+                            )
+                        }
+                    }
                 }
             }
         }
