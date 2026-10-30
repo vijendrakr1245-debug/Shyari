@@ -1,0 +1,6 @@
+{
+  "name": "AI Song & Shayari Generator",
+  "description": "AI-powered Hindi & Hinglish Shayari Generator, Song Maker, Lyrics Analyzer, and Bhagavad Gita Life Guidance app.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

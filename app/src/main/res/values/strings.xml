@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">AI Song &amp; Shayari Generator</string>
+    <string name="welcome_title">कविता, शायरी और संगीत का संगम</string>
+    <string name="welcome_subtitle">AI की मदद से मौलिक हिंदी शायरी, पूरे गाने के बोल, लिरिक्स विश्लेषण और भगवद गीता से प्रेरित जीवन मार्गदर्शन प्राप्त करें।</string>
+    <string name="nav_home">होम</string>
+    <string name="nav_shayari">शायरी</string>
+    <string name="nav_song">सॉन्ग</string>
+    <string name="nav_analysis">विश्लेषण</string>
+    <string name="nav_guidance">गीता ज्ञान</string>
+    <string name="nav_history">इतिहास</string>
+    <string name="nav_favorites">पसंदीदा</string>
+    <string name="nav_settings">सेटिंग्स</string>
+    <string name="action_copy">कॉपी करें</string>
+    <string name="action_copied">कॉपी हो गया!</string>
+    <string name="action_regenerate">फिर से बनाएँ</string>
+    <string name="action_favorite">पसंदीदा</string>
+    <string name="action_share">शेयर करें</string>
+    <string name="action_retry">पुनः प्रयास करें</string>
+    <string name="action_clear_history">पूरा इतिहास मिटाएँ</string>
+    <string name="local_storage_notice">नोट: आपका इतिहास और पसंदीदा डेटा इसी फ़ोन (Local Device Storage) में सुरक्षित रहता है और अन्य डिवाइस पर सिंक नहीं होता।</string>
+    <string name="gita_disclaimer">अस्वीकरण: यह सुविधा श्रीमद्भगवद्गीता की शिक्षाओं से प्रेरित सामान्य और सम्मानजनक जीवन मार्गदर्शन प्रदान करती है। यह किसी डॉक्टर, मानसिक स्वास्थ्य विशेषज्ञ (Mental Health Professional), या कानूनी सलाहकार का विकल्प नहीं है।</string>
+</resources>
